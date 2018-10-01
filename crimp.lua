@@ -1,5 +1,5 @@
 function notation (data)
-   return annotate(data)
+   return table.concat(flatten(annotate(data)))
 end
 
 function annotate (data)
@@ -7,45 +7,77 @@ function annotate (data)
    if type(data) == "number"  then return(data .. "N") end
    if type(data) == "boolean" then return(tostring(data) .. "B") end
    if type(data) == "nil"     then return("_") end
-   if array(data)             then return(sort_array(data) .."A") end
-   if type(data) == "table"   then return(sort(data) .."H") end
+   if type(data) == "table"   then return(coll(data)) end
 end
 
-function array (data)
+function coll (data)
+   local out = {}
+   if is_array(data) then
+      table.sort(out, function (n1, n2)
+                    return tostring(n1) < tostring(n2)
+                    end)
+      for k,v in ipairs(data) do
+         table.insert(out, annotate(v))
+      end
+      table.insert(out, "A")
+   else
+      table.sort(data, function (n1, n2)
+                    return tostring(n1) < tostring(n2)
+      end)
+
+      for k,v in pairs(data) do
+         local c = { annotate(k), annotate(v) }
+         table.sort(c, function (n1, n2)
+                       return tostring(n1) < tostring(n2)
+                       end)
+
+         table.insert(c, "A")
+         table.insert(out, c)
+      end
+      table.insert(out, "H")
+   end
+
+   return out
+end
+
+
+function map(func, tbl)
+   local newtbl = {}
+   for i,v in pairs(tbl) do
+      newtbl[i] = func(v)
+   end
+   return newtbl
+end
+
+
+function is_array (data)
    if type(data) == "table" then
       if data[1] ~= nil then return true end
    end
 end
 
-function sort (data)
-   -- table.sort(data, function (n1, n2)
-   --    return tostring(n1) < tostring(n2)
-   -- end)
-
-   output = {}
-   for k,v in pairs(data) do
-      table.insert(output, { annotate(k), annotate(v) })
+function flatten(list)
+   if type(list) ~= "table" then return {list} end
+   local flat_list = {}
+   for _, elem in ipairs(list) do
+      for _, val in ipairs(flatten(elem)) do
+         flat_list[#flat_list + 1] = val
+      end
    end
-   return annotate(output)
+   return flat_list
 end
 
-function sort_array (data)
-   table.sort(data, function (n1, n2)
-     return tostring(n1) < tostring(n2)
-   end)
 
-   output = {}
-   for k,v in ipairs(data) do
-      output[k] = annotate(v)
-   end
+-- print(notation("abc"))
+-- print(notation(123))
+-- print(notation(true))
+-- print(notation(nil))
+-- print(notation({ 3, 1, 2 }))
+-- print(notation({ a = 1, b = 2 }))
+--print(notation({ 3, 1, { 2, 4 }}))
 
-   return table.concat(output)
-end
-
-print(notation("abc"))
-print(notation(123))
-print(notation(true))
-print(notation(nil))
-print(notation({ 3, 1, 2 }))
-print(notation({ 3, 1, { 2, 4 }}))
-print(notation({ a = 1, b = 2 }))
+print(notation({a = 1}) == "1NaSAH")
+print(notation({1, "a", 3}) == "1N3NaSA")
+print(notation({"a", 1, {"b", "2"}}))
+print(notation({"a", 1, {"b", "2"}}) == "1N2SbSAaSA")
+print(notation({a = {c = 3, d = 2 }}) == "aS3NcSA2NdSAHAH")
