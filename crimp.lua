@@ -1,32 +1,34 @@
-function notation (data)
-   return table.concat(flatten(annotate(data)))
+LuaCrimp = LuaCrimp or {}
+
+function LuaCrimp.notation (data)
+   return table.concat(flatten(LuaCrimp.annotate(data)))
 end
 
-function annotate (data)
+function LuaCrimp.annotate (data)
    if type(data) == "string"  then return(data .. "S") end
-   if type(data) == "number"  then return(data .. "N") end
+   if type(data) == "number"  then return(data .. "N") end -- FIXME : make compatible with Lua 5.1
    if type(data) == "boolean" then return(tostring(data) .. "B") end
    if type(data) == "nil"     then return("_") end
-   if type(data) == "table"   then return(coll(data)) end
+   if type(data) == "table"   then return(LuaCrimp.coll(data)) end
 end
 
-function coll (data)
+function LuaCrimp.coll (data)
    local out = {}
 
    if is_array(data) then
       table.sort(data, function (n1, n2) return safe_tostring(n1) < safe_tostring(n2)  end)
 
       for k,v in ipairs(data) do
-         table.insert(out, annotate(v))
+         table.insert(out, LuaCrimp.annotate(v))
       end
       table.insert(out, "A")
    else
       for k,v in spairs(data) do
-         local c = { annotate(k), annotate(v) }
-         table.sort(c, function (n1, n2) return safe_tostring(n1) < safe_tostring(n2) end)
+         local tuple = { LuaCrimp.annotate(k), LuaCrimp.annotate(v) }
+         table.sort(tuple, function (n1, n2) return safe_tostring(n1) < safe_tostring(n2) end)
+         table.insert(tuple, "A")
 
-         table.insert(c, "A")
-         table.insert(out, c)
+         table.insert(out, tuple)
       end
       table.insert(out, "H")
    end
@@ -34,6 +36,10 @@ function coll (data)
    return out
 end
 
+-- end LuaCrimp
+
+-- start Generic utils functions
+-- TODO namespace as U. or G. ?
 
 function safe_tostring (data)
    --print(tostring(data))
@@ -76,10 +82,9 @@ function map(func, tbl)
    return newtbl
 end
 
-
 function is_array (data)
    if type(data) == "table" then
-      if data[1] ~= nil then return true end
+      if data[1] ~= nil and data[#data] ~= nil then return true end
    end
 end
 
@@ -94,46 +99,49 @@ function flatten(list)
    return flat_list
 end
 
+--
+-- test suite
+--
 
 luaunit = require('luaunit')
 
 function testString()
-   result = notation("abc")
+   result = LuaCrimp.notation("abc")
    luaunit.assertEquals( result, "abcS" )
 end
 
 function testNumber()
-   result = notation(123)
+   result = LuaCrimp.notation(123)
    luaunit.assertEquals( result, "123N" )
 end
 
 function testTrueBoolean()
-   result = notation(true)
+   result = LuaCrimp.notation(true)
    luaunit.assertEquals( result, "trueB" )
 end
 
 function testFalseBoolean()
-   result = notation(false)
+   result = LuaCrimp.notation(false)
    luaunit.assertEquals( result, "falseB" )
 end
 
 function testNil()
-   result = notation(nil)
+   result = LuaCrimp.notation(nil)
    luaunit.assertEquals( result, "_" )
 end
 
 function testPlainHashTable()
-   result = notation({a = 1})
+   result = LuaCrimp.notation({a = 1})
    luaunit.assertEquals( result, "1NaSAH" )
 end
 
 function testFlatHashTable()
-   result = notation({b = 2, a = 1})
+   result = LuaCrimp.notation({b = 2, a = 1})
    luaunit.assertEquals( result, "1NaSA2NbSAH" )
 end
 
 function testPlainArrayTable()
-   result = notation({1, "a", 3})
+   result = LuaCrimp.notation({1, "a", 3})
    luaunit.assertEquals( result, "1N3NaSA" )
 end
 
@@ -141,17 +149,17 @@ end
 -- Crimp.annotate(["a", 1, ["b", "2"]])
 -- => [[[1, "N"], [[["2", "S"], ["b", "S"]], "A"], ["a", "S"]], "A"]
 function testNestedArrayTable()
-   result = notation({"a", 1, {"b", "2"}})
+   result = LuaCrimp.notation({"a", 1, {"b", "2"}})
    luaunit.assertEquals( result, "1N2SbSAaSA" )
 end
 
 function testNestedHashTable()
-   result = notation({a = {c = 3, d = 2 }})
+   result = LuaCrimp.notation({a = {c = 3, d = 2 }})
    luaunit.assertEquals( result, "aS3NcSA2NdSAHAH" )
 end
 
 function testSomeNestedHashTable()
-   result = notation({b = 1, a = {c = 3, d = 2 }})
+   result = LuaCrimp.notation({b = 1, a = {c = 3, d = 2 }})
    luaunit.assertEquals( result, "aS3NcSA2NdSAHA1NbSAH" )
 end
 
