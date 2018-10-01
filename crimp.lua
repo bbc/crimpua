@@ -12,24 +12,18 @@ end
 
 function coll (data)
    local out = {}
+
    if is_array(data) then
-      table.sort(out, function (n1, n2)
-                    return tostring(n1) < tostring(n2)
-                    end)
+      table.sort(data, function (n1, n2) return safe_tostring(n1) < safe_tostring(n2)  end)
+
       for k,v in ipairs(data) do
          table.insert(out, annotate(v))
       end
       table.insert(out, "A")
    else
-      table.sort(data, function (n1, n2)
-                    return tostring(n1) < tostring(n2)
-      end)
-
-      for k,v in pairs(data) do
+      for k,v in spairs(data) do
          local c = { annotate(k), annotate(v) }
-         table.sort(c, function (n1, n2)
-                       return tostring(n1) < tostring(n2)
-                       end)
+         table.sort(c, function (n1, n2) return safe_tostring(n1) < safe_tostring(n2) end)
 
          table.insert(c, "A")
          table.insert(out, c)
@@ -40,6 +34,39 @@ function coll (data)
    return out
 end
 
+
+function safe_tostring (data)
+   --print(tostring(data))
+   if is_array(data) then
+      -- return table.concat(flatten(data))
+      return tostring(data)
+   else
+      return tostring(data)
+   end
+end
+
+function spairs(t, order)
+   -- collect the keys
+   local keys = {}
+   for k in pairs(t) do keys[#keys+1] = k end
+
+   -- if order function given, sort by it by passing the table and keys a, b,
+   -- otherwise just sort the keys
+   if order then
+      table.sort(keys, function(a,b) return order(t, a, b) end)
+   else
+      table.sort(keys)
+   end
+
+   -- return the iterator function
+   local i = 0
+   return function()
+      i = i + 1
+      if keys[i] then
+         return keys[i], t[keys[i]]
+      end
+   end
+end
 
 function map(func, tbl)
    local newtbl = {}
@@ -68,16 +95,64 @@ function flatten(list)
 end
 
 
--- print(notation("abc"))
--- print(notation(123))
--- print(notation(true))
--- print(notation(nil))
--- print(notation({ 3, 1, 2 }))
--- print(notation({ a = 1, b = 2 }))
---print(notation({ 3, 1, { 2, 4 }}))
+luaunit = require('luaunit')
 
-print(notation({a = 1}) == "1NaSAH")
-print(notation({1, "a", 3}) == "1N3NaSA")
-print(notation({"a", 1, {"b", "2"}}))
-print(notation({"a", 1, {"b", "2"}}) == "1N2SbSAaSA")
-print(notation({a = {c = 3, d = 2 }}) == "aS3NcSA2NdSAHAH")
+function testString()
+   result = notation("abc")
+   luaunit.assertEquals( result, "abcS" )
+end
+
+function testNumber()
+   result = notation(123)
+   luaunit.assertEquals( result, "123N" )
+end
+
+function testTrueBoolean()
+   result = notation(true)
+   luaunit.assertEquals( result, "trueB" )
+end
+
+function testFalseBoolean()
+   result = notation(false)
+   luaunit.assertEquals( result, "falseB" )
+end
+
+function testNil()
+   result = notation(nil)
+   luaunit.assertEquals( result, "_" )
+end
+
+function testPlainHashTable()
+   result = notation({a = 1})
+   luaunit.assertEquals( result, "1NaSAH" )
+end
+
+function testFlatHashTable()
+   result = notation({b = 2, a = 1})
+   luaunit.assertEquals( result, "1NaSA2NbSAH" )
+end
+
+function testPlainArrayTable()
+   result = notation({1, "a", 3})
+   luaunit.assertEquals( result, "1N3NaSA" )
+end
+
+-- in Ruby:
+-- Crimp.annotate(["a", 1, ["b", "2"]])
+-- => [[[1, "N"], [[["2", "S"], ["b", "S"]], "A"], ["a", "S"]], "A"]
+function testNestedArrayTable()
+   result = notation({"a", 1, {"b", "2"}})
+   luaunit.assertEquals( result, "1N2SbSAaSA" )
+end
+
+function testNestedHashTable()
+   result = notation({a = {c = 3, d = 2 }})
+   luaunit.assertEquals( result, "aS3NcSA2NdSAHAH" )
+end
+
+function testSomeNestedHashTable()
+   result = notation({b = 1, a = {c = 3, d = 2 }})
+   luaunit.assertEquals( result, "aS3NcSA2NdSAHA1NbSAH" )
+end
+
+os.exit( luaunit.LuaUnit.run() )
