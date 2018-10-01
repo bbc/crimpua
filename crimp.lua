@@ -16,7 +16,7 @@ function LuaCrimp.coll (data)
    local out = {}
 
    if is_array(data) then
-      table.sort(data, function (n1, n2) return safe_tostring(n1) < safe_tostring(n2)  end)
+      table.sort(data, LuaCrimp.sort)
 
       for k,v in ipairs(data) do
          table.insert(out, LuaCrimp.annotate(v))
@@ -25,7 +25,7 @@ function LuaCrimp.coll (data)
    else
       for k,v in spairs(data) do
          local tuple = { LuaCrimp.annotate(k), LuaCrimp.annotate(v) }
-         table.sort(tuple, function (n1, n2) return safe_tostring(n1) < safe_tostring(n2) end)
+         table.sort(tuple, LuaCrimp.sort)
          table.insert(tuple, "A")
 
          table.insert(out, tuple)
@@ -34,6 +34,10 @@ function LuaCrimp.coll (data)
    end
 
    return out
+end
+
+function LuaCrimp.sort(n1, n2)
+   return safe_tostring(n1) < safe_tostring(n2)
 end
 
 -- end LuaCrimp
