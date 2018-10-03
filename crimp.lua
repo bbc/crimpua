@@ -1,31 +1,31 @@
-LuaCrimp = LuaCrimp or {}
+Crimpua = Crimpua or {}
 
-function LuaCrimp.notation (data)
-   return table.concat(flatten(LuaCrimp.annotate(data)))
+function Crimpua.notation (data)
+   return table.concat(flatten(Crimpua.annotate(data)))
 end
 
-function LuaCrimp.annotate (data)
+function Crimpua.annotate (data)
    if type(data) == "string"  then return(data .. "S") end
    if type(data) == "number"  then return(data .. "N") end -- FIXME : make compatible with Lua 5.1
    if type(data) == "boolean" then return(tostring(data) .. "B") end
    if type(data) == "nil"     then return("_") end
-   if type(data) == "table"   then return(LuaCrimp.coll(data)) end
+   if type(data) == "table"   then return(Crimpua.coll(data)) end
 end
 
-function LuaCrimp.coll (data)
+function Crimpua.coll (data)
    local out = {}
 
    if is_array(data) then
-      table.sort(data, LuaCrimp.sort)
+      table.sort(data, Crimpua.sort)
 
       for k,v in ipairs(data) do
-         table.insert(out, LuaCrimp.annotate(v))
+         table.insert(out, Crimpua.annotate(v))
       end
       table.insert(out, "A")
    else
       for k,v in spairs(data) do
-         local tuple = { LuaCrimp.annotate(k), LuaCrimp.annotate(v) }
-         table.sort(tuple, LuaCrimp.sort)
+         local tuple = { Crimpua.annotate(k), Crimpua.annotate(v) }
+         table.sort(tuple, Crimpua.sort)
          table.insert(tuple, "A")
 
          table.insert(out, tuple)
@@ -36,11 +36,11 @@ function LuaCrimp.coll (data)
    return out
 end
 
-function LuaCrimp.sort(n1, n2)
+function Crimpua.sort(n1, n2)
    return safe_tostring(n1) < safe_tostring(n2)
 end
 
--- end LuaCrimp
+-- end Crimpua
 
 -- start Generic utils functions
 -- TODO namespace as U. or G. ?
@@ -110,42 +110,42 @@ end
 luaunit = require('luaunit')
 
 function testString()
-   result = LuaCrimp.notation("abc")
+   result = Crimpua.notation("abc")
    luaunit.assertEquals( result, "abcS" )
 end
 
 function testNumber()
-   result = LuaCrimp.notation(123)
+   result = Crimpua.notation(123)
    luaunit.assertEquals( result, "123N" )
 end
 
 function testTrueBoolean()
-   result = LuaCrimp.notation(true)
+   result = Crimpua.notation(true)
    luaunit.assertEquals( result, "trueB" )
 end
 
 function testFalseBoolean()
-   result = LuaCrimp.notation(false)
+   result = Crimpua.notation(false)
    luaunit.assertEquals( result, "falseB" )
 end
 
 function testNil()
-   result = LuaCrimp.notation(nil)
+   result = Crimpua.notation(nil)
    luaunit.assertEquals( result, "_" )
 end
 
 function testPlainHashTable()
-   result = LuaCrimp.notation({a = 1})
+   result = Crimpua.notation({a = 1})
    luaunit.assertEquals( result, "1NaSAH" )
 end
 
 function testFlatHashTable()
-   result = LuaCrimp.notation({b = 2, a = 1})
+   result = Crimpua.notation({b = 2, a = 1})
    luaunit.assertEquals( result, "1NaSA2NbSAH" )
 end
 
 function testPlainArrayTable()
-   result = LuaCrimp.notation({1, "a", 3})
+   result = Crimpua.notation({1, "a", 3})
    luaunit.assertEquals( result, "1N3NaSA" )
 end
 
@@ -153,17 +153,17 @@ end
 -- Crimp.annotate(["a", 1, ["b", "2"]])
 -- => [[[1, "N"], [[["2", "S"], ["b", "S"]], "A"], ["a", "S"]], "A"]
 function testNestedArrayTable()
-   result = LuaCrimp.notation({"a", 1, {"b", "2"}})
+   result = Crimpua.notation({"a", 1, {"b", "2"}})
    luaunit.assertEquals( result, "1N2SbSAaSA" )
 end
 
 function testNestedHashTable()
-   result = LuaCrimp.notation({a = {c = 3, d = 2 }})
+   result = Crimpua.notation({a = {c = 3, d = 2 }})
    luaunit.assertEquals( result, "aS3NcSA2NdSAHAH" )
 end
 
 function testSomeNestedHashTable()
-   result = LuaCrimp.notation({b = 1, a = {c = 3, d = 2 }})
+   result = Crimpua.notation({b = 1, a = {c = 3, d = 2 }})
    luaunit.assertEquals( result, "aS3NcSA2NdSAHA1NbSAH" )
 end
 
