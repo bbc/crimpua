@@ -15,9 +15,9 @@ end
 function Crimpua.coll (data)
    local out = {}
 
-   if is_array(data) then
-      table.sort(data, Crimpua.sort)
+   table.sort(data, Crimpua.sort)
 
+   if is_array(data) then
       for k,v in ipairs(data) do
          table.insert(out, Crimpua.annotate(v))
       end
@@ -46,12 +46,43 @@ end
 -- TODO namespace as U. or G. ?
 
 function safe_tostring (data)
-   --print(tostring(data))
+   -- print(tostring(data))
    if is_array(data) then
-      -- return table.concat(flatten(data))
-      return tostring(data)
+      table.sort(data, Crimpua.sort)
+      return flatten(data)[1]
+   elseif type(data) == "table" then
+      print("-------------")
+      table_print(data)
+      print("-------------")
+
+      table.sort(data, Crimpua.sort)
+      return data[1]
    else
       return tostring(data)
+   end
+end
+
+function table_print (tt, indent, done)
+   done = done or {}
+   indent = indent or 0
+   if type(tt) == "table" then
+      for key, value in pairs (tt) do
+         io.write(string.rep (" ", indent)) -- indent it
+         if type (value) == "table" and not done [value] then
+            done [value] = true
+            io.write(string.format("[%s] => table\n", tostring (key)));
+            io.write(string.rep (" ", indent+4)) -- indent it
+            io.write("(\n");
+            table_print (value, indent + 7, done)
+            io.write(string.rep (" ", indent+4)) -- indent it
+            io.write(")\n");
+         else
+            io.write(string.format("[%s] => %s\n",
+                                   tostring (key), tostring(value)))
+         end
+      end
+   else
+      io.write(tt .. "\n")
    end
 end
 
@@ -88,7 +119,7 @@ end
 
 function is_array (data)
    if type(data) == "table" then
-      if data[1] ~= nil and data[#data] ~= nil then return true end
+      if data[1] ~= nil then return true end
    end
 end
 
@@ -109,53 +140,53 @@ end
 
 luaunit = require('luaunit')
 
-function testString()
-   result = Crimpua.notation("abc")
-   luaunit.assertEquals( result, "abcS" )
-end
+-- function testString()
+--    result = Crimpua.notation("abc")
+--    luaunit.assertEquals( result, "abcS" )
+-- end
 
-function testNumber()
-   result = Crimpua.notation(123)
-   luaunit.assertEquals( result, "123N" )
-end
+-- function testNumber()
+--    result = Crimpua.notation(123)
+--    luaunit.assertEquals( result, "123N" )
+-- end
 
-function testTrueBoolean()
-   result = Crimpua.notation(true)
-   luaunit.assertEquals( result, "trueB" )
-end
+-- function testTrueBoolean()
+--    result = Crimpua.notation(true)
+--    luaunit.assertEquals( result, "trueB" )
+-- end
 
-function testFalseBoolean()
-   result = Crimpua.notation(false)
-   luaunit.assertEquals( result, "falseB" )
-end
+-- function testFalseBoolean()
+--    result = Crimpua.notation(false)
+--    luaunit.assertEquals( result, "falseB" )
+-- end
 
-function testNil()
-   result = Crimpua.notation(nil)
-   luaunit.assertEquals( result, "_" )
-end
+-- function testNil()
+--    result = Crimpua.notation(nil)
+--    luaunit.assertEquals( result, "_" )
+-- end
 
-function testPlainHashTable()
-   result = Crimpua.notation({a = 1})
-   luaunit.assertEquals( result, "1NaSAH" )
-end
+-- function testPlainHashTable()
+--    result = Crimpua.notation({a = 1})
+--    luaunit.assertEquals( result, "1NaSAH" )
+-- end
 
-function testFlatHashTable()
-   result = Crimpua.notation({b = 2, a = 1})
-   luaunit.assertEquals( result, "1NaSA2NbSAH" )
-end
+-- function testFlatHashTable()
+--    result = Crimpua.notation({b = 2, a = 1})
+--    luaunit.assertEquals( result, "1NaSA2NbSAH" )
+-- end
 
-function testPlainArrayTable()
-   result = Crimpua.notation({1, "a", 3})
-   luaunit.assertEquals( result, "1N3NaSA" )
-end
+-- function testPlainArrayTable()
+--    result = Crimpua.notation({1, "a", 3})
+--    luaunit.assertEquals( result, "1N3NaSA" )
+-- end
 
 -- in Ruby:
 -- Crimp.annotate(["a", 1, ["b", "2"]])
 -- => [[[1, "N"], [[["2", "S"], ["b", "S"]], "A"], ["a", "S"]], "A"]
-function testNestedArrayTable()
-   result = Crimpua.notation({"a", 1, {"b", "2"}})
-   luaunit.assertEquals( result, "1N2SbSAaSA" )
-end
+-- function testNestedArrayTable()
+--    result = Crimpua.notation({"a", 1, {"b", "2"}})
+--    luaunit.assertEquals( result, "1N2SbSAaSA" )
+-- end
 
 function testNestedHashTable()
    result = Crimpua.notation({a = {c = 3, d = 2 }})
