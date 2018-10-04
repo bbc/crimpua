@@ -65,4 +65,17 @@ describe("The notation strings", function()
             assert.is_equal("1NaSAH", Crimpua.notation({a=1}))
         end)
     end)
+--    # Lua tables make no distinction between a table value being nil and the corresponding key not existing in the table
+--    # this makes this case unecessary, and not easily matchable in lua
+--    # although some users use null = {} and check for null rather than nil to handle this
+--    describe("Given a nested table with named keys", function()
+--        it("returns the key value pairs as an array within an array with the H suffixes", function()
+--            assert.is_equal("1NaSAH", Crimpua.notation({a = {c = nil, [2] = 2}}))
+--        end)
+--    end)
+    describe("Given a nested table with named keys", function()
+        it("returns the key value pairs as an array within an array with the H suffixes", function()
+            assert.is_equal("aS2S2NAcSfooSAHAH", Crimpua.notation({a = {c = "foo", [2] = 2}}))
+        end)
+    end)
 end)
