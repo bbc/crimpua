@@ -25,10 +25,16 @@ local function convertHashToListOfTuples(hash)
 end
 
 local function stringCompare(a, b)
-    if isArray(a) then table.sort(a,stringCompare); a = a[1] end
-    if isArray(b) then table.sort(b,stringCompare); b = b[1] end
-    if isHash(a) then a = convertHashToListOfTuples(a); table.sort(a,stringCompare); a = a[1] end
-    if isHash(b) then b = convertHashToListOfTuples(b); table.sort(b,stringCompare); b = b[1] end
+    local function firstItemOf(object)
+        table.sort(object,stringCompare);
+        return object[1]
+    end
+
+    if isArray(a) then a =firstItemOf(a) end
+    if isArray(b) then b = firstItemOf(b) end
+
+    if isHash(a)  then a = firstItemOf(convertHashToListOfTuples(a)) end
+    if isHash(b)  then b = firstItemOf(convertHashToListOfTuples(b)) end
     return tostring(a) < tostring(b)
 end
 
