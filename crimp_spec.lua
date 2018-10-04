@@ -1,0 +1,10 @@
+require 'busted.runner'()
+Crimpua = require("crimp")
+
+describe("The notation strings", function()
+    describe("Given a single string", function()
+        it("returns the string with an S prefix", function()
+            assert.is_equal(Crimpua.notation("abc"), "abcS")
+        end)
+    end)
+end)
