@@ -9,6 +9,8 @@ local function map(func, array)
 end
 
 local function stringCompare(a, b)
+    if type(a) == "table" then table.sort(a,stringCompare); a = a[1] end
+    if type(b) == "table" then table.sort(b,stringCompare); b = b[1] end
     return tostring(a) < tostring(b)
 end
 
