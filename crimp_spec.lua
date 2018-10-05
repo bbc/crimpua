@@ -153,8 +153,8 @@ describe("The MD5 signature output", function()
     --    # this makes this case unecessary, and not easily matchable in lua
     --    # although some users use null = {} and check for null rather than nil to handle this
     --    describe("Given a nested table with named keys", function()
-    --        it("returns the key value pairs as an array within an array with the H suffixes", function()
-    --            assert.is_equal("1NaSAH", Crimpua.notation({a = {c = nil, [2] = 2}}))
+    --        it("returns the correct signature", function()
+    --            assert.is_equal("518e7bb17674f6acbb296845862a152d", Crimpua.notation({a = {c = nil, [2] = 2}}))
     --        end)
     --    end)
     describe("Given a nested table with named keys", function()
