@@ -49,12 +49,18 @@ local function collectionTypeSuffix(collection)
     return "H"
 end
 
-function Crimpua.notation (data)
+function Crimpua.notation(data)
     if type(data) == "nil"     then return("_") end
     if type(data) == "string"  then return(data .. "S") end
     if type(data) == "number"  then return(data .. "N") end
     if type(data) == "boolean" then return(tostring(data) .. "B") end
     if type(data) == "table"   then return(table.concat(notateCollection(data)) .. collectionTypeSuffix(data)) end
+end
+
+function Crimpua.signature(data)
+    local md5 = require 'md5'
+
+    return md5.sumhexa(Crimpua.notation(data))
 end
 
 return Crimpua
