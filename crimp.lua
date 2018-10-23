@@ -1,4 +1,4 @@
-Crimpua = Crimpua or {}
+Crimp = Crimp or {}
 
 local function map(func, array)
     local newArray = {}
@@ -41,7 +41,7 @@ end
 local function notateCollection(data)
     if not isArray(data) then data = convertHashToListOfTuples(data) end
     table.sort(data, stringCompare)
-    return map(Crimpua.notation,data)
+    return map(Crimp.notation,data)
 end
 
 local function collectionTypeSuffix(collection)
@@ -49,7 +49,7 @@ local function collectionTypeSuffix(collection)
     return "H"
 end
 
-function Crimpua.notation(data)
+function Crimp.notation(data)
     if type(data) == "nil"     then return("_") end
     if type(data) == "string"  then return(data .. "S") end
     if type(data) == "number"  then return(data .. "N") end
@@ -57,10 +57,10 @@ function Crimpua.notation(data)
     if type(data) == "table"   then return(table.concat(notateCollection(data)) .. collectionTypeSuffix(data)) end
 end
 
-function Crimpua.signature(data)
+function Crimp.signature(data)
     local md5 = require 'md5'
 
-    return md5.sumhexa(Crimpua.notation(data))
+    return md5.sumhexa(Crimp.notation(data))
 end
 
-return Crimpua
+return Crimp
