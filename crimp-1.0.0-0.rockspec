@@ -1,5 +1,6 @@
 package = "crimp"
 version = "1.0.0-0"
+rockspec_format = "3.0"
 source = {
   url = "git://github.com/BBC-News/crimpua.git",
   tag = "v1.0.0-0"
@@ -12,7 +13,13 @@ description = {
 }
 dependencies = {
   "lua >= 5.1",
-  "md5"
+  "kikito/md5",
+}
+test_dependencies = {
+  "busted"
+}
+test = {
+  type = "busted"
 }
 build = {
   type = "builtin",
