@@ -2,18 +2,17 @@ language: python
 sudo: false
 
 env:
-- LUA="lua=5.3"
+- LUA="5.1"
 
 before_install:
 - pip install hererocks
-- hererocks here --$LUA -r latest
+- hererocks here -l$LUA -r3
 - source here/bin/activate
 
 install:
-- luarocks install --server=http://luarocks.org/manifests/kikito md5
-- luarocks install busted
+- luarocks install crimp-1.0.0-0.rockspec --only-deps
 
-script: "busted crimp_spec.lua"
+script: "luarocks test"
 
 notifications:
   email: false
