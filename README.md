@@ -40,6 +40,49 @@ print(letters[1]) -- prints "a"
 We distinguish between an array and a hash by inspecting `table[1]`
 which returns the first element for an array and nil for a hash.
 
+You'll see why we have mentioned the use of tables in the next section.
+
+## Implementation Details
+
+Under the hood Crimp annotates the passed data structure to a nested array of primitives (strings, numbers, booleans, nils, etc.) and a single byte to indicate the type of the primitive:
+
+|  Type   | Byte |
+|   :-:   |  :-: |
+| String  |  `S` |
+| Number  |  `N` |
+| Boolean |  `B` |
+| nil     |  `_` |
+| Array   |  `A` |
+| Hash    |  `H` |
+
+You can verify it using the `#notation` function:
+
+```lua
+Crimp.notation({a=1})
+"1NaSAH"
+```
+
+Before signing Crimpua, uses the `#notation` function to transform the return value of a table to a string. However the terminal strips away quotes when using LuaJIT (Just-In-Time-Compiler).
+
+```lua
+Crimp.notation({ a: { b: 'c' } })
+"aSbScSAHAH"
+```
+
+Please note the Arrays and Hash keys are sorted before signing.
+
+```lua
+Crimp.notation({3, 1, 2})
+"1N2N3NA"
+```
+
+key/value tuples get sorted as well.
+
+```lua
+Crimp.notation({ b: 3 })
+"3NbSAH"
+```
+
 ## Changelog
 
 ### 1.0.0
